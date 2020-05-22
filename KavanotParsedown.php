@@ -3,6 +3,14 @@ require_once ('Parsedown.php');
 require_once ('ParsedownExtra.php');
 
 class KavanotParsedown extends ParsedownExtra {
+
+	function __construct(){
+		$this->InlineTypes['/'] []= 'Italic';
+		$this->InlineTypes['{'] []= 'Attributes';
+		$this->InlineTypes['_'] = ['Cite']; // redefinition
+		$this->inlineMarkerList = implode ('', array_keys($this->InlineTypes));
+		$this->BlockTypes['-'][] = 'Source';
+	}
 	
 	protected $smartQuotes = array(
 		'"..."' => 'adjustEllipsis',
@@ -10,9 +18,7 @@ class KavanotParsedown extends ParsedownExtra {
 		"'\"'" => 'adjustDoubleQuotes',
 		'"\'"' => 'adjustSingleQuotes'
 	);
-	
-	protected $hebrewRegEx = '[א-ת]';
-	
+		
 	function text($text){
 		$text = parent::text($text);
 		
@@ -146,15 +152,6 @@ class KavanotParsedown extends ParsedownExtra {
 		$node->textContent = preg_replace ("/($hebrew)(\W*)'(.+?)'/", '$1$2’$3‘', $node->textContent);  // if preceded by Hebrew, assume it's right to left
 		$node->textContent = preg_replace ('/(\w)\'(\w)/', '$1’$2', $node->textContent); // apostrophe
 		$node->textContent = preg_replace ('/\'(.+?)\'/', '‘$1’', $node->textContent); // single quotes
-	}
-	
-	function __construct(){
-		$this->InlineTypes['/'][]= 'Italic';
-		$this->inlineMarkerList .= '/';
-		$this->InlineTypes['{'][]= 'Attributes';
-		$this->inlineMarkerList .= '{';
-		$this->InlineTypes['_'] = array('Cite'); // redefinition
-		$this->BlockTypes['-'][] = 'Source';
 	}
 
 	// foreign languages use the <i> tag. Default for me is Hebrew
