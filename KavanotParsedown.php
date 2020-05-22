@@ -62,7 +62,8 @@ class KavanotParsedown extends ParsedownExtra {
 		//   <figcaption>Source</figcaption>
 		// </figure>
 		// But I've been using a <footer> element *within* the blockquote for the source.
-		$blockquote = $footer->parentNode;
+		for ($blockquote = $footer->parentNode; $blockquote && $blockquote->nodeName !== 'blockquote'; $blockquote = $blockquote->parentNode);
+		if (is_null($blockquote)) $blockquote = $footer->parentNode; // not actually in a <blockquote> but inside something
 		$figure = $blockquote->parentNode;
 		if ($figure->nodeName != 'figure'){
 			$figure = $blockquote->ownerDocument->createElement ('figure');
@@ -74,7 +75,7 @@ class KavanotParsedown extends ParsedownExtra {
 		while ($footer->firstChild) $figcaption->appendChild ($footer->firstChild);
 		self::copyAttributes ($footer, $figcaption);
 		$figure->appendChild ($figcaption);
-		$blockquote->removeChild ($footer);
+		$footer->parentNode->removeChild ($footer);
 	}
 
 	static protected function parseAttributes ($attrString){
