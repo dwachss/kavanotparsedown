@@ -26,15 +26,7 @@ class KavanotParsedown extends ParsedownExtra {
 			LIBXML_HTML_NOIMPLIED | LIBXML_NOWARNING | LIBXML_NOERROR | LIBXML_HTML_NODEFDTD);
 		$xpath = new DOMXpath($dom);
 		
-		// Move the sources to the right location in the blockquotes.
-		// In my original Kavanot, sources are in the form
-		// <blockquote lang=he>
-		//    <p>Text</p>
-		// 		<footer class=source>Source</footer>
-		// </blockquote>
-		// According to
-		// https://html.spec.whatwg.org/multipage/grouping-content.html#the-blockquote-element:the-blockquote-element-4
-		// the source should be *outside* the blockquote, as a <figcaption>
+		// Source citations use <footer class=source> for the citations. Adjust those to match whatwg recommendations
 		foreach ($xpath->query("//footer[@class='source']") as $footer) self::adjustFooter($footer);
 		
 		// turn <attr> elements into attributes of the following element
@@ -56,6 +48,11 @@ class KavanotParsedown extends ParsedownExtra {
 	}
 	
 	static protected function adjustFooter ($footer){
+		// In my original Kavanot, sources are in the form
+		// <blockquote lang=he>
+		//    <p>Text</p>
+		// 		<footer class=source>Source</footer>
+		// </blockquote>
 		// According to https://html.spec.whatwg.org/multipage/grouping-content.html#the-blockquote-element:the-blockquote-element-4
 		// Quotes and sources should be:
 		// <figure>
@@ -84,11 +81,24 @@ class KavanotParsedown extends ParsedownExtra {
 		// shortcuts:
 		// #string is translated to id="string"
 		// .string is translated to class="string"
-		// [a-zA-Z]{2} is translated to lang=[a-zA-Z]{2} (since I use the lang= attribute so much )
-		$attrString = " $attrString "; 
-		$attrString = preg_replace ('/\s#(\w+)\s/', ' id="$1" ', $attrString);
-		$attrString = preg_replace ('/\s\.(\w+)\s/', ' class="$1" ', $attrString);
-		$attrString = preg_replace ('/\s([a-zA-Z]{2})\s/', ' lang="$1" ', $attrString);
+		// [a-zA-Z]{2} is translated to lang=[a-zA-Z]{2} (since I use the lang= attribute so much)
+		$attrString = " $attrString "; // to simplify the regex, search for space-delimited rather than start/end
+		// to make this work, we need to actually parse the string; simply splitting on spaces won't account for strings
+		// so we pull out quotes. Fortunately HTML doesn't escape quotes; you need to use &quot;
+		$strings = array();
+		$remover = function ($matches) use (&$strings) {
+			$strings []= $matches[0];
+			return "\x1a".count($strings)."\x1a";
+		};
+		$replacer = function ($matches) use (&$strings) {
+			return $strings[$matches[1]-1];
+		};
+		$attrString = preg_replace_callback ('/"[^"]*"/', $remover, $attrString);
+		$attrString = preg_replace_callback ("/'[^']*'/", $remover, $attrString);
+		$attrString = preg_replace ('/ #(\w+) /', ' id=$1 ', $attrString);
+		$attrString = preg_replace ('/ \.(\w+) /', ' class=$1 ', $attrString);
+		$attrString = preg_replace ('/ ([a-zA-Z]{2}) /', ' lang=$1 ', $attrString);
+		$attrString = preg_replace_callback ('/\x1a(\d)+\x1a/', $replacer, $attrString);
 		// trick from https://stackoverflow.com/a/1083843, though SimpleXMLElement is much more strict so I had to use DOMDocument
 		$dom = DOMDocument::loadHTML("<element $attrString />",
 			LIBXML_HTML_NOIMPLIED | LIBXML_NOWARNING | LIBXML_NOERROR | LIBXML_HTML_NODEFDTD);
@@ -101,16 +111,14 @@ class KavanotParsedown extends ParsedownExtra {
 	
 	static protected function moveAttributes ($attrNode){
 		// apply the attributes of $attrNode to the next node, then delete it.
-		// one special case: the parser may include nodes *inside* the attribute node rather than following it, if it is interpreted as 
-		// a block element, as in {: .bigimage}![Logo](/images/logo.png). Then we should move the children up.
-		for ($child = $attrNode->lastChild; $child; $child = $attrNode->lastChild){
-			$attrNode->parentNode->insertBefore ($child, $attrNode->nextSibling);
+		// Special case: an attribute on a line by itself will be enclosed in a <p>. Delete that <p>
+		if ($attrNode->parentNode->childNodes->length == 1 && $attrNode->parentNode->nodeName == 'p'){
+			self::copyAttributes ($attrNode->parentNode, $attrNode);
+			$attrNode->parentNode->parentNode->replaceChild ($attrNode, $attrNode->parentNode);
 		}
 		// skip text nodes etc.
 		for ($target = $attrNode->nextSibling; $target && $target->nodeType != XML_ELEMENT_NODE; $target = $target->nextSibling);
-		// if the attr node is at the end of an element, apply it to the elclosing element
-		if (!$target) $target = $attrNode->parentNode;
-		self::copyAttributes ($attrNode, $target);
+		if ($target) self::copyAttributes ($attrNode, $target);
 		$attrNode->parentNode->removeChild($attrNode);
 	} // moveAttributes
 	
@@ -146,7 +154,6 @@ class KavanotParsedown extends ParsedownExtra {
 		$this->inlineMarkerList .= '{';
 		$this->InlineTypes['_'] = array('Cite'); // redefinition
 		$this->BlockTypes['-'][] = 'Source';
-		$this->BlockTypes['{'][] = 'Attributes';
 	}
 
 	// foreign languages use the <i> tag. Default for me is Hebrew
@@ -228,23 +235,5 @@ class KavanotParsedown extends ParsedownExtra {
 		}
 	}
 	
-	protected function blockAttributes($excerpt){
-		// based on https://python-markdown.github.io/extensions/attr_list/
-		// but the {: attr list } goes before the element, not after
-		if (preg_match('#^{:(.+?)}(.*)#', $excerpt['text'], $matches)) {
-			return array(
-				'element' => array(
-					'name' => 'attr',
-					'attributes' => self::parseAttributes($matches[1]),
-					'handler' => array(
-						'function' => 'linesElements',
-						'argument' => (array) $matches[2],
-						'destination' => 'elements'
-					),
-				)
-			);
-		}
-	}	// inlineCite
-
 } // KavanotParsedown
 ?>
