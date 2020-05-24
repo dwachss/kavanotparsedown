@@ -88,3 +88,10 @@ becomes
 </figure>
 ```
  Unlike the Python syntax, successive attributes will replace the previous ones. `{: .foo .bar }` will only become `class="bar"`.
+ 
+ ## Smart Quotes
+ Pairs of straight quotes will become curly: `"foo"` and `'foo'` will become `“foo”` and `‘foo’`. It tries to be smart enough to detect Hebrew text, so that the curly quotes go in the correct direction. Single quotes become an apostrophe. In Hebrew text, an isolated single quote becomes a <i lang=he><a href=https://en.wikipedia.org/wiki/Geresh>geresh</a></i> and an isolated double quote becomes a <i lang=he><a href=https://en.wikipedia.org/wiki/Gershayim>gershayim</a></i>.
+ 
+ In addition, `...` becomes an ellipsis: `…` and `--` becomes an em-dash: `—`.
+ 
+ The smart quotes are not smart enough to span separate element: ` "this is *important*." ` fails: ` "this is <em>important</em>." `. Put the curly quotes in manually.
