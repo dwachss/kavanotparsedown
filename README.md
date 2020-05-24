@@ -2,7 +2,7 @@
  
  Extensions to [Parsedown](http://parsedown.org) that makes my life easier editing http://kavanot.name.
 
-It does not incorporate [Markdown Extra](https://michelf.ca/projects/php-markdown/extra/), since I think the only thing I want from that would be tables, and Parsedown already includes that. Markdown inside HTML elements and definition lists might be useful, so I may extend from (Parsedown Extra)[https://github.com/erusev/parsedown-extra] at some point.
+It does not incorporate [Markdown Extra](https://michelf.ca/projects/php-markdown/extra/), since I think the only thing I want from that would be tables, and Parsedown already includes that. Markdown inside HTML elements and definition lists might be useful, so I may extend from [Parsedown Extra](https://github.com/erusev/parsedown-extra) at some point.
 
 ## `<i>` elements
 I use a lot of Hebrew, including transliterations. According to [MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/i):
@@ -56,7 +56,7 @@ I use `--` at the beginning of the line to indicate this. So the above example w
 Note that the CSS for the `<figcaption>` should match the `<blockquote>`; that won't happen automatically.
 
 ## Attribute lists
-(Parsedown Extra)[https://github.com/erusev/parsedown-extra] allows for adding attributes to selected elements. I wanted to add attributes to *any* element. I used the syntax of the [Python Markdown library](https://python-markdown.github.io/extensions/attr_list/), however, the attribute lists go *before* the elements. The rule about attributes for 
+[Parsedown Extra](https://github.com/erusev/parsedown-extra) allows for adding attributes to selected elements. I wanted to add attributes to *any* element. I used the syntax of the [Python Markdown library](https://python-markdown.github.io/extensions/attr_list/), however, the attribute lists go *before* the elements. The rule about attributes for 
 block elements being on a line by themselves remains.
 
 Shortcuts include: `.foo` becomes `class="foo"`, `#bar` becomes `id="bar"`, and a two-letter attribute becomes a `lang` attribute (since I use that so much): `la` becomes `lang="la"`.
