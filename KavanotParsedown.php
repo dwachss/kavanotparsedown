@@ -1,14 +1,14 @@
 <?
 require_once ('Parsedown.php');
-require_once ('ParsedownExtra.php');
 
-class KavanotParsedown extends ParsedownExtra {
+class KavanotParsedown extends Parsedown {
 
 	function __construct(){
 		$this->InlineTypes['/'] []= 'Italic';
 		$this->InlineTypes['{'] []= 'Attributes';
 		$this->InlineTypes['_'] = ['Cite']; // redefinition
 		$this->inlineMarkerList = implode ('', array_keys($this->InlineTypes));
+		$this->specialCharacters []= '/'; // only characters in this array can be escaped by '\'
 		$this->BlockTypes['-'][] = 'Source';
 	}
 	
