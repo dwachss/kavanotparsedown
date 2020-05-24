@@ -25,12 +25,12 @@ class KavanotParsedown extends Parsedown {
 		
 		// String utility functions
 		$strings = &$this->strings;
-		$this->remover = function ($matches) use ($strings) {
+		$this->remover = function ($matches) use (&$strings) {
 			$strings []= $matches[0];
 			return "\x1a".count($strings)."\x1a";
 		};
-		$this->replacer = function ($matches) use ($strings) {
-			return $this->strings[$matches[1]-1];
+		$this->replacer = function ($matches) use (&$strings) {
+			return $strings[$matches[1]-1];
 		};
 
 	}
@@ -54,15 +54,16 @@ class KavanotParsedown extends Parsedown {
 		// turn <attr> elements into attributes of the following element
 		foreach ($xpath->query("//attr") as $attr) self::moveAttributes ($attr);
 				
-		// smart quotes etc.
-		foreach ($this->reSmartQuotes as $plain => $fancy){
-			foreach ($xpath->query("//text()[contains(.,$plain)]") as $node){ // select only text nodes with the target string
-				// note that this will fail if the quotes span multiple text nodes. Need to manually edit for that.
-				$this->$fancy ($node);
-			}
-		}
+		$text = $dom->saveHTML($dom->documentElement);
 
-		return $dom->saveHTML($dom->documentElement);
+		// smart quotes etc.
+		$text = $this->removeInlineTags($text);		
+		foreach ($this->reSmartQuotes as $plain => $fancy){
+			$text = $this->$fancy ($text);
+		}
+		$text = $this->replaceStrings($text);
+
+		return $text;
 	} // text
 	
 //----- Italic ------
@@ -154,29 +155,31 @@ class KavanotParsedown extends Parsedown {
 	}
 
 //---- Smart Quotes -----
-	protected function adjustEllipsis ($node){
-		$node->textContent = preg_replace ('/\.\.\./', '…', $node->textContent);
+	protected function adjustEllipsis ($text){
+		return $this->preg_replace_text ('/\.\.\./', '…', $text);
 	}
 
-	protected function adjustEmDash ($node){
-		$node->textContent = preg_replace ('/--/', '—', $node->textContent);
+	protected function adjustEmDash ($text){
+		return $this->preg_replace_text ('/--/', '—', $text);
 	}
 	
-	protected function adjustDoubleQuotes ($node){
+	protected function adjustDoubleQuotes ($text){
 		$gershayim = '״'; // these are very hard to see in my editor, so I separated these out
 		$hebrew = '[א-ת]';
-		$node->textContent = preg_replace ("/($hebrew)\"($hebrew)/", "$1$gershayim$2", $node->textContent);
-		$node->textContent = preg_replace ("/($hebrew)(\W*)\"(.+?)\"/", '$1$2”$3“', $node->textContent);  // if preceded by Hebrew, assume it's right to left
-		$node->textContent = preg_replace ('/"(.+?)"/', '“$1”', $node->textContent);
+		$text = $this->preg_replace_text ("/($hebrew)\"($hebrew)/", "$1$gershayim$2", $text);
+		$text = $this->preg_replace_text ("/($hebrew)(\W*)\"(.+?)\"/", '$1$2”$3“', $text);  // if preceded by Hebrew, assume it's right to left
+		$text = $this->preg_replace_text ('/"(.+?)"/', '“$1”', $text);
+		return $text;
 	}
 
-	protected function adjustSingleQuotes ($node){
+	protected function adjustSingleQuotes ($text){
 		$geresh = '׳'; // these are very hard to see in my editor, so I separated these out
 		$hebrew = '[א-ת]';
-		$node->textContent = preg_replace ("/($hebrew)'(\\W)/", "$1$geresh$2", $node->textContent);
-		$node->textContent = preg_replace ("/($hebrew)(\\W*)'(.+?)'/", '$1$2’$3‘', $node->textContent);  // if preceded by Hebrew, assume it's right to left
-		$node->textContent = preg_replace ('/(\w)\'(\w)/', '$1’$2', $node->textContent); // apostrophe
-		$node->textContent = preg_replace ('/\'(.+?)\'/', '‘$1’', $node->textContent); // single quotes
+		$text = $this->preg_replace_text ("/($hebrew)'(\\W)/", "$1$geresh$2", $text);
+		// no single quotes in Hebrew; assume that we only want the geresh.
+		$text = $this->preg_replace_text ('/(\w)\'(\w)/', '$1’$2', $text); // apostrophe
+		$text = $this->preg_replace_text ('/\'(.+?)\'/', '‘$1’', $text); // single quotes
+		return $text;
 	}
 
 //---- Utility functions for Attributes ----
@@ -270,6 +273,19 @@ class KavanotParsedown extends Parsedown {
 	protected function replaceStrings ($target){
 		return preg_replace_callback ('/\x1a(\d)+\x1a/', $this->replacer, $target);
 	}
-	
+
+	protected function removeInlineTags ($text){
+		$reInlineTag = '#</?('.implode('|',$this->textLevelElements).')[^>]*>#';
+		return $this->removeStrings ($reInlineTag, $text);
+	}
+
+	protected function preg_replace_text ($pattern, $replacement, $subject){
+		// only replace text that is not inside tags. Assumes $subject is valid HTML and surrounded by tags
+		// the (?<=>) is a lookbehind assertion to make sure the match starts with a >
+		// so the regex matches any text of the form >...< and then searches for $pattern in that
+		return preg_replace_callback('/(?<=>)[^<]*/', function($matches) use ($pattern, $replacement) {
+			return preg_replace($pattern, $replacement, $matches[0]);
+		}, $subject);
+	}
 } // KavanotParsedown
 ?>
