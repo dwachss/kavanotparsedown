@@ -87,7 +87,7 @@ becomes
  <figcaption class="source">This is the <cite>source</cite></figcaption>
 </figure>
 ```
- Unlike the Python syntax, successive attributes with the same name will be ignored. `{: .foo .bar }` will only become `class="foo"`.
+ Unlike the Python syntax, successive attributes with the same name will be ignored. `{: .foo .bar }` will only become `class="foo"`. Attribute names with illegal characters will be ignored.
  
  ## Smart Quotes
  Pairs of straight quotes will become curly: `"foo"` and `'foo'` will become `“foo”` and `‘foo’`. It tries to be smart enough to detect Hebrew text, so that the curly quotes go in the correct direction. Single quotes become an apostrophe. In Hebrew text, an isolated single quote becomes a <i lang=he><a href=https://en.wikipedia.org/wiki/Geresh>geresh</a></i> and an isolated double quote becomes a <i lang=he><a href=https://en.wikipedia.org/wiki/Gershayim>gershayim</a></i>.
