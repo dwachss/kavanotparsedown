@@ -8,10 +8,83 @@ It does not incorporate [Markdown Extra](https://michelf.ca/projects/php-markdow
 I use a lot of Hebrew, including transliterations. According to [MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/i):
 >The HTML `<i>` element represents a range of text that is set off from the normal text for some reason. Some examples include technical terms, foreign language phrases, or fictional character thoughts. It is typically displayed in italic type.
 
-So a transliterated term should be `<i lang=he>Shabbat</i>`. I use `/` for that: `/Shabbat/` becomes `<i lang=he>Shabbat</i>`.
+So a transliterated term should be `<i lang=he>Shabbat</i>`. I use `/` for that: `/Shabbat/` becomes `<i lang=he>Shabbat</i>`. Note that the `lang=he` attribute is automatically included, but can be changed with attribute lists (see below)
 
 URL's will still be parsed, but other uses of slashes should be escaped.
 
 ## `<cite>` elements
 
-To Be Done
+I use a lot of `<cite>` elements, and I figure there's no reason for *two* markers for `<em>` and `<strong>` elements, so I redefined `_`: `_A Tale of Two Cities_` becomes `<cite>A Tale of Two Cities</cite>`.
+
+## `<figcaption>` in `<figure>` elements
+Quotes should have their sources cited in the text. According to [WhatWG](https://html.spec.whatwg.org/multipage/grouping-content.html#the-blockquote-element:the-blockquote-element-4):
+
+>Here a blockquote element is used in conjunction with a figure element and its figcaption to clearly relate a quote to its attribution (which is not part of the quote and therefore doesn't belong inside the blockquote itself):
+``` html
+<figure>
+ <blockquote>
+  <p>The truth may be puzzling. It may take some work to grapple with.
+  It may be counterintuitive. It may contradict deeply held
+  prejudices. It may not be consonant with what we desperately want to
+  be true. But our preferences do not determine what's true. We have a
+  method, and that method helps us to reach not absolute truth, only
+  asymptotic approaches to the truth — never there, just closer
+  and closer, always finding vast new oceans of undiscovered
+  possibilities. Cleverly designed experiments are the key.</p>
+ </blockquote>
+ <figcaption>Carl Sagan, in "<cite>Wonder and Skepticism</cite>", from
+ the <cite>Skeptical Inquirer</cite> Volume 19, Issue 1 (January-February
+ 1995)</figcaption>
+</figure>
+```
+I use `--` at the beginning of the line to indicate this. So the above example would be:
+
+```
+>The truth may be puzzling. It may take some work to grapple with.
+  It may be counterintuitive. It may contradict deeply held
+  prejudices. It may not be consonant with what we desperately want to
+  be true. But our preferences do not determine what's true. We have a
+  method, and that method helps us to reach not absolute truth, only
+  asymptotic approaches to the truth — never there, just closer
+  and closer, always finding vast new oceans of undiscovered
+  possibilities. Cleverly designed experiments are the key.
+--Carl Sagan, in "_Wonder and Skepticism_", from
+ the _Skeptical Inquirer_ Volume 19, Issue 1 (January-February
+ 1995)
+```
+
+Note that the CSS for the `<figcaption>` should match the `<blockquote>`; that won't happen automatically.
+
+## Attribute lists
+(Parsedown Extra)[https://github.com/erusev/parsedown-extra] allows for adding attributes to selected elements. I wanted to add attributes to *any* element. I used the syntax of the [Python Markdown library](https://python-markdown.github.io/extensions/attr_list/), however, the attribute lists go *before* the elements. The rule about attributes for 
+block elements being on a line by themselves remains.
+
+Shortcuts include: `.foo` becomes `class="foo"`, `#bar` becomes `id="bar"`, and a two-letter attribute becomes a `lang` attribute (since I use that so much): `la` becomes `lang="la"`.
+
+Attribute lists are enclosd in `{:` and `}`. Spaces before and after are ignored.
+```
+{: #details }
+## Details
+These are {: .big }*important* details. There is a certain {:fr}/Je ne sais qua/ about them
+```
+becomes
+``` html
+<h2 id="details">Details</h2>
+<p>These are <em class="big">important</em> details. There is a certain <i lang="fr">Je ne sais qua</i> about them</p>
+```
+And
+```
+{:he}
+>This is a quote
+--This is the _source_
+```
+becomes
+```html
+<figure lang="he">
+ <blockquote>
+   <p>This is a quote</p>
+ </blockquote>
+ <figcaption class="source">This is the <cite>source</cite></figcaption>
+</figure>
+```
+ Unlike the Python syntax, successive attributes will replace the previous ones. `{: .foo .bar }` will only become `class="bar"`.
