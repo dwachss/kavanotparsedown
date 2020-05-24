@@ -94,4 +94,4 @@ becomes
  
  In addition, `...` becomes an ellipsis: `…` and `--` becomes an em-dash: `—`.
  
- The smart quotes are not smart enough to span separate element: ` "this is *important*." ` fails: ` "this is <em>important</em>." `. Put the curly quotes in manually.
+ The smart quotes try to be smart enough to span separate inline elements: ` "this is *important*." ` produces: ` “this is <em>important</em>.” `. And they won't span block-level elements. But there are edge cases that might need putting in curly quotes manually.
