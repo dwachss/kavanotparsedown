@@ -189,11 +189,13 @@ class KavanotParsedown extends ParsedownExtra {
 			);
 		}
 	}	// inlineCite
+	
+	private $attributeRE = '#^{:(.+?)}\s*#';
 
 	protected function inlineAttributes($excerpt){
 		// based on https://python-markdown.github.io/extensions/attr_list/
 		// but the {: attr list } goes before the element, not after
-		if (preg_match('#^{:(.+?)}#', $excerpt['text'], $matches)) {
+		if (preg_match($this->attributeRE, $excerpt['text'], $matches)) {
 			return array(
 				'extent' => strlen($matches[0]), 
 				'element' => array(
@@ -203,6 +205,14 @@ class KavanotParsedown extends ParsedownExtra {
 			);
 		}
 	}	// inlineCite
+	
+	// allow for attribute lists before blocks; they should be in their own paragraph
+	protected function paragraphContinue($Line, array $Block){
+		if (!$Block['interrupted'] && preg_match ($this->attributeRE,  $Block['element']['handler']['argument'])){
+			$Block['interrupted'] = 1;
+		}
+		return parent::paragraphContinue($Line, $Block);
+	}
 
 	// Sources use a footer in a block quote. Use -- to indicate this)
 	protected function blockSource($Line, $Block = null){
