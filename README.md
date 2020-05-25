@@ -89,6 +89,26 @@ becomes
 ```
  Unlike the Python syntax, successive attributes with the same name will be ignored. `{: .foo .bar }` will only become `class="foo"`. Attribute names with illegal characters will be ignored.
  
+## Markdown in HTML block elements
+I borrowed this from [Markdown Extra](https://michelf.ca/projects/php-markdown/extra/). Block-level raw HTML is generally not parsed, but if the attribute `markdown` or `md` is set, then the inner HTML will be parsed (with the same parser, so internal HTML is not parsed unless *it* has the `markdown` attribute set.
+
+Note that this is more liberal than Markdown Extra, which requires `markdown=1` or `markdown=block`. This just looks for the presence of either attribute.
+
+```
+<div md>
+This is *important*.
+
+This is {:yi}/vikhtik/.
+</div>
+```
+Becomes
+```html
+<div>
+<p>This is <em>important</em>.</p>
+<p>This is <i lang="yi">vikhtik</i>.</p>
+</div>
+```
+ 
  ## Smart Quotes
  Pairs of straight quotes will become curly: `"foo"` and `'foo'` will become `“foo”` and `‘foo’`. It tries to be smart enough to detect Hebrew text, so that the curly quotes go in the correct direction. Single quotes become an apostrophe. In Hebrew text, an isolated single quote becomes a <i lang=he><a href=https://en.wikipedia.org/wiki/Geresh>geresh</a></i> and an isolated double quote becomes a <i lang=he><a href=https://en.wikipedia.org/wiki/Gershayim>gershayim</a></i>.
  
