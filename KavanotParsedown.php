@@ -8,7 +8,7 @@ require_once ('Parsedown.php');
 define ('OBJECT_REPLACEMENT_CHARACTER', '￼');
 class StringReplace {
 	static private $strings = array();
-	static private $reReplacement = '/'.OBJECT_REPLACEMENT_CHARACTER.'(\d)+'.OBJECT_REPLACEMENT_CHARACTER.'/';
+	static private $reReplacement = '/'.OBJECT_REPLACEMENT_CHARACTER.'(\d+)'.OBJECT_REPLACEMENT_CHARACTER.'/';
 	private static function remover ($matches){
 		self::$strings []= $matches[0];
 		return OBJECT_REPLACEMENT_CHARACTER.count(self::$strings).OBJECT_REPLACEMENT_CHARACTER;
@@ -292,7 +292,7 @@ class KavanotParsedown extends Parsedown {
 	
 //---- String utilities
 	protected function removeInlineTags ($text){
-		$reInlineTag = '#</?('.implode('|',$this->textLevelElements).')[^>]*>#';
+		$reInlineTag = '#</?('.implode('|',$this->textLevelElements).')\b[^>]*>#';
 		return StringReplace::remove ($reInlineTag, $text);
 	}
 
