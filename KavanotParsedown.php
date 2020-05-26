@@ -1,28 +1,6 @@
 <?
 require_once ('Parsedown.php');
-
-// for a lot of the string manipulation that I do, I need to remove a section of the text, process the remainder, 
-// and then put it back. I want to make sure that the placeholder is not something that might occur in the original text,
-// so it is not replaced accidentally. It has to be legal XML, though. U+FFFC (https://en.wikipedia.org/wiki/Specials_(Unicode_block) ) 
-// works for that. Removed strings are marked with  "￼{number}￼".
-define ('OBJECT_REPLACEMENT_CHARACTER', '￼');
-class StringReplace {
-	static private $strings = array();
-	static private $reReplacement = '/'.OBJECT_REPLACEMENT_CHARACTER.'(\d+)'.OBJECT_REPLACEMENT_CHARACTER.'/';
-	private static function remover ($matches){
-		self::$strings []= $matches[0];
-		return OBJECT_REPLACEMENT_CHARACTER.count(self::$strings).OBJECT_REPLACEMENT_CHARACTER;
-	}
-	private static function replacer ($matches){
-		return self::$strings[$matches[1]-1];
-	}
-	static public function remove ($re, $target){
-		return preg_replace_callback ($re, 'self::remover', $target);
-	}
-	static public function restore ($target){
-		return preg_replace_callback (self::$reReplacement, 'self::replacer', $target);
-	}
-}
+require_once ('StringReplace.php');
 
 class KavanotParsedown extends Parsedown {
 
@@ -77,7 +55,7 @@ class KavanotParsedown extends Parsedown {
 		}
 
 		// undo all the string removal
-		$text = StringReplace::restore ($text);
+		$text = StringReplace\restore ($text);
 		
 		// remove the nonsemantic <div>
 		$text = preg_replace ('#^<div>|</div>$#', '', $text);
@@ -178,7 +156,7 @@ class KavanotParsedown extends Parsedown {
 		$outerHTML = $e->ownerDocument->saveHTML($e);
 		$innerHTML = preg_replace ('#(^[^>]*>)|(<[^<]*$)#', '', $outerHTML);
 		$innerHTML = $this->text ($innerHTML);
-		$replacementString = StringReplace::remove ('/^.*$/s', $innerHTML); // remove the entire innerHTML
+		$replacementString = StringReplace\remove ('/^.*$/s', $innerHTML); // remove the entire innerHTML
 		$e->removeAttribute ('markdown');
 		$e->removeAttribute ('md');
 		$e->textContent = $replacementString;
@@ -221,12 +199,12 @@ class KavanotParsedown extends Parsedown {
 		$attrString = " $attrString "; // to simplify the regex, search for space-delimited rather than start/end
 		// to make this work, we need to actually parse the string; simply splitting on spaces won't account for strings
 		// so we pull out quotes. Fortunately HTML doesn't escape quotes; you need to use &quot;
-		$attrString = StringReplace::remove ('/"[^"]*"/', $attrString);
-		$attrString = StringReplace::remove ("/'[^']*'/", $attrString);
+		$attrString = StringReplace\remove ('/"[^"]*"/', $attrString);
+		$attrString = StringReplace\remove ("/'[^']*'/", $attrString);
 		$attrString = preg_replace ('/ #(\w+)(?= )/', ' id=$1 ', $attrString);
 		$attrString = preg_replace ('/ \.(\w+)(?= )/', ' class=$1 ', $attrString);
 		$attrString = preg_replace ('/ ([a-zA-Z]{2})(?= )/', ' lang=$1 ', $attrString);
-		$attrString = StringReplace::restore ($attrString);
+		$attrString = StringReplace\restore ($attrString);
 		// trick from https://stackoverflow.com/a/1083843, though SimpleXMLElement is much more strict so I had to use DOMDocument
 		$dom = DOMDocument::loadHTML("<element $attrString />",
 			LIBXML_HTML_NOIMPLIED | LIBXML_NOWARNING | LIBXML_NOERROR | LIBXML_HTML_NODEFDTD);
@@ -293,7 +271,7 @@ class KavanotParsedown extends Parsedown {
 //---- String utilities
 	protected function removeInlineTags ($text){
 		$reInlineTag = '#</?('.implode('|',$this->textLevelElements).')\b[^>]*>#';
-		return StringReplace::remove ($reInlineTag, $text);
+		return StringReplace\remove ($reInlineTag, $text);
 	}
 
 	protected function preg_replace_text ($pattern, $replacement, $subject){
