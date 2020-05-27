@@ -124,7 +124,7 @@ class KavanotParsedown extends Parsedown {
 	
 //---- Source -----
 	protected function blockSource($Line, $Block = null){
-		if (preg_match('/^--[ ]*(.+)/', $Line['text'], $matches)) {
+		if (preg_match('/^--(.+)/', $Line['text'], $matches)) {
 			if ($Block && $Block['type'] === 'Paragraph'){
 				// parse this immediately and add it to the paragraph (since paragraphs don't nest block-level elements)
 				$Block['element']['handler']['argument'] .= "\n".$this->element($this->blockSource($Line)['element']);
@@ -135,7 +135,7 @@ class KavanotParsedown extends Parsedown {
 					'name' => 'footer',
 					'handler' => array(
 						'function' => 'lineElements',
-						'argument' => $matches[1],
+						'argument' => $matches[1]."\n", // newline if we are joining multiple sources
 						'destination' => 'elements'
 					),
 					'attributes' => array('class' => 'source')
@@ -253,7 +253,8 @@ class KavanotParsedown extends Parsedown {
 			$figure->appendChild ($blockquote);
 			self::copyAttributes ($blockquote, $figure); // make sure we get the lang attributes moved up
 		}
-		$figcaption = $blockquote->ownerDocument->createElement ('figcaption');
+		$figcaption = $figure->getElementsByTagName ('figcaption')->item(0);
+		if (is_null ($figcaption)) $figcaption = $blockquote->ownerDocument->createElement ('figcaption');
 		while ($footer->firstChild) $figcaption->appendChild ($footer->firstChild);
 		self::copyAttributes ($footer, $figcaption);
 		$figure->appendChild ($figcaption);
