@@ -199,8 +199,7 @@ class KavanotParsedown extends Parsedown {
 		$attrString = " $attrString "; // to simplify the regex, search for space-delimited rather than start/end
 		// to make this work, we need to actually parse the string; simply splitting on spaces won't account for strings
 		// so we pull out quotes. Fortunately HTML doesn't escape quotes; you need to use &quot;
-		$attrString = StringReplace\remove ('/"[^"]*"/', $attrString);
-		$attrString = StringReplace\remove ("/'[^']*'/", $attrString);
+		$attrString = StringReplace\remove ('/("[^"]*")|(\'[^\']*\')/', $attrString);
 		$attrString = preg_replace ('/ #(\w+)(?= )/', ' id=$1 ', $attrString);
 		$attrString = preg_replace ('/ \.(\w+)(?= )/', ' class=$1 ', $attrString);
 		$attrString = preg_replace ('/ ([a-zA-Z]{2})(?= )/', ' lang=$1 ', $attrString);
