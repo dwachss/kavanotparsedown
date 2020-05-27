@@ -144,13 +144,6 @@ class KavanotParsedown extends Parsedown {
 		}
 	}	// blockSource
 
-	protected function blockSourceContinue($Line, array $Block){
-		if (!isset($Block['interrupted']) && preg_match('/^--[ ]*(.+)/', $Line['text'], $matches)){
-			$Block['element']['handler']['argument'] .= $matches[1];
-			return $Block;
-		}
-	}
-
 //---- Markdown inside HTML blocks
 	protected function processElement($e){
 		$outerHTML = $e->ownerDocument->saveHTML($e);
