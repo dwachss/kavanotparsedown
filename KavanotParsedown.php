@@ -7,6 +7,7 @@ class KavanotParsedown extends Parsedown {
 	protected $reItalic = '#^\/(.+?)\/#';
 	protected $reCite = '#^_(.+?)_#';
 	protected $reAttributes = '#^{:(.+?)}\s*#';
+	protected $reAttributesWholeLine = '#^{:(.+?)}\s*$#';
 	protected $reSource = '/^--[ ]*(.+)/';
 	protected $reSmartQuotes = array(
 		'"..."' => 'adjustEllipsis',
@@ -116,7 +117,7 @@ class KavanotParsedown extends Parsedown {
 	
 	// allow for attribute lists before blocks; they should be in their own paragraph
 	protected function paragraphContinue($Line, array $Block){
-		if (!$Block['interrupted'] && preg_match ($this->reAttributes,  $Block['element']['handler']['argument'])){
+		if (preg_match ($this->reAttributesWholeLine,  $Block['element']['handler']['argument'])){
 			$Block['interrupted'] = 1;
 		}
 		return parent::paragraphContinue($Line, $Block);
@@ -197,11 +198,10 @@ class KavanotParsedown extends Parsedown {
 		$attrString = preg_replace ('/ \.(\w+)(?= )/', ' class=$1 ', $attrString);
 		$attrString = preg_replace ('/ ([a-zA-Z]{2})(?= )/', ' lang=$1 ', $attrString);
 		$attrString = StringReplace\restore ($attrString);
-		// trick from https://stackoverflow.com/a/1083843, though SimpleXMLElement is much more strict so I had to use DOMDocument
-		$dom = DOMDocument::loadHTML("<element $attrString />",
+		$dom = DOMDocument::loadHTML("<?xml encoding='UTF-8'><element $attrString />",
 			LIBXML_HTML_NOIMPLIED | LIBXML_NOWARNING | LIBXML_NOERROR | LIBXML_HTML_NODEFDTD);
 		$ret = [];
-		foreach ($dom->firstChild->attributes as $attr){
+		foreach ($dom->firstChild->nextSibling->attributes as $attr){
 			$ret [$attr->nodeName] = $attr->nodeValue;
 		}
 		return $ret;
