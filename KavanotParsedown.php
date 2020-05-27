@@ -124,12 +124,12 @@ class KavanotParsedown extends Parsedown {
 	
 //---- Source -----
 	protected function blockSource($Line, $Block = null){
-		if ($Block && $Block['type'] === 'Paragraph'){
-			// parse this immediately and add it to the paragraph (since paragraphs don't nest block-level elements)
-			$Block['element']['handler']['argument'] .= "\n".$this->element($this->blockSource($Line)['element']);
-			return $Block;
-		}
 		if (preg_match('/^--[ ]*(.+)/', $Line['text'], $matches)) {
+			if ($Block && $Block['type'] === 'Paragraph'){
+				// parse this immediately and add it to the paragraph (since paragraphs don't nest block-level elements)
+				$Block['element']['handler']['argument'] .= "\n".$this->element($this->blockSource($Line)['element']);
+				return $Block;
+			}
 			return array(
 				'element' => array(
 					'name' => 'footer',
