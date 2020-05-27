@@ -7,7 +7,6 @@ namespace StringReplace;
 define ('OBJECT_REPLACEMENT_CHARACTER', '￼');
 define ('RE_REPLACEMENT', '/'.OBJECT_REPLACEMENT_CHARACTER.'(\d+)'.OBJECT_REPLACEMENT_CHARACTER.'/');
 $strings = array();
-$reReplacement = '/'.OBJECT_REPLACEMENT_CHARACTER.'(\d+)'.OBJECT_REPLACEMENT_CHARACTER.'/';
 $remover = function ($matches){
 	global $strings;
 	$strings []= $matches[0];
