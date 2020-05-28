@@ -12,6 +12,10 @@ So a transliterated term should be `<i lang=he>Shabbat</i>`. I use `/` for that:
 
 URL's will still be parsed, but other uses of slashes should be escaped.
 
+## Inline links
+
+`<http://example.com>` in Markdown creates a link with the url as the text: `<a href="http://example.com">http://example.com</a>`. Many of my links are to other pages in the Kavanot site, and that is organized so the title of the page *is* the url, so I adopted `<\\title>` for that. So `<//Glossary>` becomes `<a href="/Glossary">Glossary</a>`.
+
 ## `<cite>` elements
 
 I use a lot of `<cite>` elements, and I figure there's no reason for *two* markers for `<em>` and `<strong>` elements, so I redefined `_`: `_A Tale of Two Cities_` becomes `<cite>A Tale of Two Cities</cite>`.
