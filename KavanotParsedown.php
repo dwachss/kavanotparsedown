@@ -5,6 +5,7 @@ require_once ('StringReplace.php');
 class KavanotParsedown extends Parsedown {
 
 	protected $reItalic = '#^\/(.+?)\/#';
+	protected $reSelfLink = '#^<//(.+?)>#';
 	protected $reCite = '#^_(.+?)_#';
 	protected $reAttributes = '#^{:(.+?)}\s*#';
 	protected $reAttributesWholeLine = '#^{:(.+?)}\s*$#';
@@ -19,6 +20,7 @@ class KavanotParsedown extends Parsedown {
 
 	function __construct(){
 		$this->InlineTypes['/'] []= 'Italic';
+		$this->InlineTypes['<'] []= 'SelfLink';
 		$this->InlineTypes['_'] = ['Cite']; // redefinition
 		$this->InlineTypes['{'] []= 'Attributes';
 		$this->inlineMarkerList = implode ('', array_keys($this->InlineTypes));
@@ -78,6 +80,21 @@ class KavanotParsedown extends Parsedown {
 						'destination' => 'elements'
 					),
 					'attributes' => array('lang' => 'he')
+				)
+			);
+		}
+	}	// inlineItalic
+	
+//----- SelfLink ------
+	// A link to another Kavanot page
+	protected function inlineSelfLink($excerpt){
+		if (preg_match($this->reSelfLink, $excerpt['text'], $matches)) {
+			return array(
+				'extent' => strlen($matches[0]), 
+				'element' => array(
+					'name' => 'a',
+					'text' => $matches[1],
+					'attributes' => array('href' => '/'.urlencode($matches[1]))
 				)
 			);
 		}
