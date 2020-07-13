@@ -272,7 +272,11 @@ class KavanotParsedown extends Parsedown {
 		}
 		$figcaption = $figure->getElementsByTagName ('figcaption')->item(0);
 		if (is_null ($figcaption)) $figcaption = $blockquote->ownerDocument->createElement ('figcaption');
-		while ($footer->firstChild) $figcaption->appendChild ($footer->firstChild);
+		// to allow for multiple parts of a <figcaption> (since only one <figcaption> is allowed in a <figure>,
+		// wrap the parts in a <span>. This will be nonsemantic if there is only one.
+		$span = $blockquote->ownerDocument->createElement ('span');
+		while ($footer->firstChild) $span->appendChild ($footer->firstChild);
+		$figcaption->appendChild($span);
 		self::copyAttributes ($footer, $figcaption);
 		$figure->appendChild ($figcaption);
 		$footer->parentNode->removeChild ($footer);
