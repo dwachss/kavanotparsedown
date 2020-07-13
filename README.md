@@ -2,7 +2,7 @@
  
  Extensions to [Parsedown](http://parsedown.org) that makes my life easier editing http://kavanot.name.
 
-It does not incorporate [Markdown Extra](https://michelf.ca/projects/php-markdown/extra/), since I think the only thing I want from that would be tables, and Parsedown already includes that. Markdown inside HTML elements and definition lists might be useful, so I may extend from [Parsedown Extra](https://github.com/erusev/parsedown-extra) at some point.
+It does not incorporate [Markdown Extra](https://michelf.ca/projects/php-markdown/extra/), since I think the only thing I want from that would be tables, and Parsedown already includes that. Definition lists might be useful, so I may extend from [Parsedown Extra](https://github.com/erusev/parsedown-extra) at some point.
 
 ## `<i>` elements
 I use a lot of Hebrew, including transliterations. According to [MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/i):
