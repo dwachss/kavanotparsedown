@@ -48,6 +48,9 @@ class KavanotParsedown extends Parsedown {
 		
 		// process elements with the markdown attribute
 		foreach ($xpath->query("//*[@markdown] | //*[@md]") as $element) $this->processElement ($element);
+		
+		// add the decoded URL for readable addresses
+		foreach ($xpath->query("//*[@href]") as $element) $this->addDecodedURL ($element);
 				
 		$text = $dom->saveHTML($dom->documentElement);
 
@@ -171,6 +174,21 @@ class KavanotParsedown extends Parsedown {
 		$e->removeAttribute ('markdown');
 		$e->removeAttribute ('md');
 		$e->textContent = $replacementString;
+	}
+
+//---- decoded URLs
+	protected function addDecodedURL ($e){
+		// URL's with Hebrew or other Unicode characters are translated to %hex notation. 
+		// when I print that, it's uninterpretable. Create a data attribute that has the original URL
+		// Only translate 2-byte UTF-8 (first nybble is 1100 or 1101, C or D). Single byte UTF-8 presumably
+		// represents a reserved character, and 3+ byte UTF is too complicated. Let it be.
+		$href = $e->getAttribute ('href');
+		$href = preg_replace_callback (
+			'/(%[CD][0-9A-F]%[0-9A-F][0-9A-F])+/',
+			function ($matches) { return urldecode($matches[0]); },
+			$href
+		);
+		$e->setAttribute ('data-decodedhref', $href);
 	}
 
 //---- Smart Quotes -----
