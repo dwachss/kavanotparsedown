@@ -119,3 +119,20 @@ Becomes
  In addition, `...` becomes an ellipsis: `…` and `--` becomes an em-dash: `—`.
  
  The smart quotes try to be smart enough to span separate inline elements: ` "this is *important*." ` produces: ` “this is <em>important</em>.” `. And they won't span block-level elements. But there are edge cases that might need putting in curly quotes manually.
+
+## Unicode URLs
+My print CSS uses 
+
+```css
+article a::after {
+		content: " {" attr(href) "}";
+}
+```
+
+so that the URL's are printed on the page, so I know where my sources are. But URL's that contain Unicode characters with more than one byte (anything that isn't ASCII) are encoded to `%hexnumber` format, which I can't read. So `KavanotParsedown` adds a `data-decodedhref` attribute to all links, with the href run through [urldecode](https://www.php.net/manual/en/function.urldecode.php). So the actual CSS to use is
+
+```css
+article a::after {
+		content: " {" attr(data-decodedhref) "}";
+}
+```
