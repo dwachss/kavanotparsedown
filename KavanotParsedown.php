@@ -230,8 +230,16 @@ class KavanotParsedown extends Parsedown {
 		// so we pull out quotes. Fortunately HTML doesn't escape quotes; you need to use &quot;
 		$attrString = StringReplace\remove ('/("[^"]*")|(\'[^\']*\')/', $attrString);
 		$attrString = preg_replace ('/ #(\w+)(?= )/', ' id=$1 ', $attrString);
-		$attrString = preg_replace ('/ \.(\w+)(?= )/', ' class=$1 ', $attrString);
+		$classes = [];
+		$attrString = preg_replace_callback (
+			'/ \.(\w+)(?= )/',
+			function ($matches) use (&$classes) {
+				$classes []= $matches[1];
+			},
+			$attrString
+		);
 		$attrString = preg_replace ('/ ([a-zA-Z]{2})(?= )/', ' lang=$1 ', $attrString);
+		$attrString .= 'class="'.implode (' ', $classes).'" ';
 		$attrString = StringReplace\restore ($attrString);
 		$dom = DOMDocument::loadHTML("<?xml encoding='UTF-8'><element $attrString />",
 			LIBXML_HTML_NOIMPLIED | LIBXML_NOWARNING | LIBXML_NOERROR | LIBXML_HTML_NODEFDTD);
