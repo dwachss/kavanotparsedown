@@ -67,13 +67,13 @@ Shortcuts include: `.foo` becomes `class="foo"`, `#bar` becomes `id="bar"`, and 
 
 Attribute lists are enclosd in `{:` and `}`. Spaces before and after are ignored.
 ```
-{: #details }
+{: #details style="color:red"}
 ## Details
 These are {: .big }*important* details. There is a certain {:fr}/Je ne sais qua/ about them
 ```
 becomes
 ``` html
-<h2 id="details">Details</h2>
+<h2 id="details" style="color:red">Details</h2>
 <p>These are <em class="big">important</em> details. There is a certain <i lang="fr">Je ne sais qua</i> about them</p>
 ```
 And
@@ -91,7 +91,7 @@ becomes
  <figcaption class="source">This is the <cite>source</cite></figcaption>
 </figure>
 ```
- Unlike the Python syntax, successive attributes with the same name will be ignored. `{: .foo .bar }` will only become `class="foo"`. Attribute names with illegal characters will be ignored.
+ Classes will be combined `{: .foo .bar }` will  become `class="foo bar"`. Attribute names with illegal characters will be ignored.
  
 ## Markdown in HTML block elements
 I borrowed this from [Markdown Extra](https://michelf.ca/projects/php-markdown/extra/). Block-level raw HTML is generally not parsed, but if the attribute `markdown` or `md` is set, then the inner HTML will be parsed (with the same parser, so internal HTML is not parsed unless *it* has the `markdown` attribute set.
